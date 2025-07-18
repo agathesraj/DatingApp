@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  dating-api:
+    build:
+      context: ./API
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:5001;http://+:5000
+    volumes:
+      - ./API:/app/data
+    networks:
+      - dating-network
+
+  api-gateway:
+    build:
+      context: ./ApiGateway
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:5001;http://+:5000
+    depends_on:
+      - dating-api
+    networks:
+      - dating-network
+
+  # Optional: Add a reverse proxy like nginx for production
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #   depends_on:
+  #     - api-gateway
+  #   networks:
+  #     - dating-network
+
+networks:
+  dating-network:
+    driver: bridge
